@@ -3,6 +3,7 @@ import 'package:bks/main.dart';
 import 'package:bks/widgets/data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:lottie/lottie.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sizer/sizer.dart';
@@ -12,7 +13,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:toggle_switch/toggle_switch.dart';
-import 'package:wave_slider/wave_slider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
@@ -100,7 +100,7 @@ class _bookmarkState extends State<bookmark> {
                     toggleIndex = index;
                     if(index == 0){
                       _dragUpdate = widget.completedPages.toDouble() / widget.totalPages.toDouble() * 100;
-                      pages.text = (widget.completedPages.toDouble() / widget.totalPages.toDouble() * 100).toStringAsFixed(0);
+                      pages.text = widget.completedPages.toString();
                     }
                     else{
                       _dragUpdate = 100;
@@ -326,13 +326,25 @@ Widget modalContent (context) {
                             children: [
                               InkWell(
                                 onTap: () async{
-                                  Map<String, dynamic> row = {
-                                    DatabaseHelper.columnName: (snapshot.data['items'][index]['volumeInfo']['title']).toString(),
-                                    DatabaseHelper.columnAuthor: (snapshot.data['items'][index]['volumeInfo']['authors'][0]).toString(),
-                                    DatabaseHelper.columnThumbnail: (snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']).toString(),
-                                    DatabaseHelper.columnTotal: (snapshot.data['items'][index]['volumeInfo']['pageCount']).toString(),
-                                    DatabaseHelper.columnDone: '0'
-                                  };
+                                  Map<String, dynamic> row = {};
+                                 if(table == 'current_books'){
+                                   row = {
+                                     DatabaseHelper.columnName: (snapshot.data['items'][index]['volumeInfo']['title']).toString(),
+                                     DatabaseHelper.columnAuthor: (snapshot.data['items'][index]['volumeInfo']['authors'][0]).toString(),
+                                     DatabaseHelper.columnThumbnail: (snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']).toString(),
+                                     DatabaseHelper.columnTotal: (snapshot.data['items'][index]['volumeInfo']['pageCount']).toString(),
+                                     DatabaseHelper.columnDone: '0'
+                                   };
+                                 }
+                                  if(table == 'wishlist'){
+                                    row = {
+                                      DatabaseHelper.columnName: (snapshot.data['items'][index]['volumeInfo']['title']).toString(),
+                                      DatabaseHelper.columnAuthor: (snapshot.data['items'][index]['volumeInfo']['authors'][0]).toString(),
+                                      DatabaseHelper.columnThumbnail: (snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']).toString(),
+                                      DatabaseHelper.columnTotal: (snapshot.data['items'][index]['volumeInfo']['pageCount']).toString(),
+                                      DatabaseHelper.columnLove: '0'
+                                    };
+                                  }
                                   books.add(row);
                                   final id = await DatabaseHelper.instance.insert(row);
                                   print('inserted row id: $id');
@@ -425,17 +437,19 @@ class _HomeState extends State<Home> {
       books.clear();
       allRows.forEach((row){
         print(row);
-        books.add(row);
+        Map<String, dynamic> map = Map<String, dynamic>.from(row);
+
+        books.add(map);
       });
       loading = false;
     });
   }
   @override
   Widget build(BuildContext context) {
-    return loading ? Center(child: CircularProgressIndicator(),) : Scaffold(
+    return loading ? const Scaffold(body: Center(child: CircularProgressIndicator(),)) : Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(130),
+        preferredSize: const Size.fromHeight(100),
         child: AppBar(
           elevation: 0,
           backgroundColor: Colors.white,
@@ -443,7 +457,7 @@ class _HomeState extends State<Home> {
             children: [
               const SizedBox(height: 30),
               Text(
-                'bookshelf',
+                table == 'wishlist' ? 'wishlist' :'bookshelf',
                 style: TextStyle(
                   fontFamily: 'Hurme',
                   fontSize: 23.sp,
@@ -454,10 +468,44 @@ class _HomeState extends State<Home> {
           ),
           actions: [
             Padding(
-              padding: const EdgeInsets.only(right: 12.0),
+              padding: const EdgeInsets.fromLTRB(0, 7, 12, 0),
               child: Column(
                 children: [
-                  const SizedBox(height: 5),
+                  // const SizedBox(height: 5),
+                  Container(
+
+                    decoration: BoxDecoration(
+                        boxShadow: lightShadows,
+                        borderRadius: BorderRadius.circular(50),
+                        color: Colors.white
+                    ),
+                    child: IconButton(
+                      tooltip: 'Wishlist',
+                      icon: Icon(table == 'wishlist' ? Icons.book_rounded : Icons.list_alt_outlined, color: Colors.black, size: 20.sp,), onPressed: () {
+                      if(table == 'current_books'){
+                        print('switched_to_wishlist');
+                        setState(() {
+                          table = 'wishlist';
+                        });
+                      }
+                      else{
+                        print('switched_to_books');
+                        setState(() {
+                          table = 'current_books';
+                        });
+                      }
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
+                    },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(0, 7, 12, 0),
+              child: Column(
+                children: [
+                  // const SizedBox(height: 5),
                   Container(
 
                     decoration: BoxDecoration(
@@ -499,21 +547,23 @@ class _HomeState extends State<Home> {
                 itemBuilder: (BuildContext context,int index){
                   return GestureDetector(
                     onTap: (){
-                      setState(() {
-                        toggleIndex = 0;
-                        pages.text = books[index]['done'];
-                        _dragPercentage = double.parse(books[index]['done']);
-                        _dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
-                      });
-                      showMaterialModalBottomSheet(
-                        context: context,
-                        bounce: true,
-                        duration: const Duration(milliseconds: 1200),
-                        builder: (context) => SingleChildScrollView(
-                          controller: ModalScrollController.of(context),
-                          child: Container(child: bookmark(id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)),
-                        ),
-                      );
+                      if(table == 'current_books'){
+                        setState(() {
+                          toggleIndex = 0;
+                          pages.text = books[index]['done'];
+                          _dragPercentage = double.parse(books[index]['done']);
+                          _dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
+                        });
+                        showMaterialModalBottomSheet(
+                          context: context,
+                          bounce: true,
+                          duration: const Duration(milliseconds: 1200),
+                          builder: (context) => SingleChildScrollView(
+                            controller: ModalScrollController.of(context),
+                            child: Container(child: bookmark(id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)),
+                          ),
+                        );
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -552,15 +602,65 @@ class _HomeState extends State<Home> {
                                   ),
                                 ),
                                 const SizedBox(
-                                  height: 20
+                                  height: 10
                                 ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: LinearProgressIndicator(
-                                      value: int.parse(books[index]['done'])/int.parse(books[index]['total']),
+                                table == 'wishlist' ? Container(
+                                  padding: const EdgeInsets.only(left: 10),
+                                  child: RatingStars(
+                                    value: int.parse(books[index]['love']).toDouble(),
+                                    onValueChanged: (v) async{
+                                      print(v);
+                                      setState(() {
+                                        books[index]['love'] = v.toStringAsFixed(0);
+                                      });
+                                      print(books[index]['_id']);
+                                      print(v.toStringAsFixed(0));
+                                      Map<String, dynamic> row = {
+                                        DatabaseHelper.columnId: books[index]['_id'],
+                                        DatabaseHelper.columnLove: v.toStringAsFixed(0),
+                                      };
+                                      final rowsAffected = await DatabaseHelper.instance.update(row);
+                                      print('updated $rowsAffected row(s)');
+                                    },
+                                    starBuilder: (index, color) => Icon(
+                                      CupertinoIcons.heart_fill,
+                                      color: color,
+                                      size: 30,
                                     ),
+                                    starCount: 3,
+                                    starSize: 40,
+                                    maxValue: 3,
+                                    starSpacing: 5,
+                                    valueLabelVisibility: false,
+                                    animationDuration: Duration(milliseconds: 1000),
+                                    valueLabelPadding:
+                                    const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
+                                    valueLabelMargin: const EdgeInsets.only(right: 8),
+                                    starOffColor: const Color(0xffe7e8ea),
+                                    starColor: Colors.red,
+                                  ),
+                                ) : Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '${(int.parse(books[index]['done'])/int.parse(books[index]['total']) * 100).toStringAsFixed(0)}%',
+                                        style: TextStyle(
+                                          fontFamily: 'hurme',
+                                          color: Colors.grey[700]
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(10),
+                                            child: LinearProgressIndicator(
+                                              value: int.parse(books[index]['done'])/int.parse(books[index]['total']),
+                                              backgroundColor: Colors.grey[350],
+                                            )
+                                        ),
+                                      )
+                                    ],
                                   ),
                                 )
                               ],

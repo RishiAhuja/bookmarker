@@ -1,16 +1,22 @@
-# bks
+## Book Tracker App
 
-books app
+This is a app in which you can track your current books, you are reading. 
 
-## Getting Started
+A few resources to get you started if you want to download the 0.0.1 version:
 
-This project is a starting point for a Flutter application.
+- [Download Here](https://github.com/RishiAhuja/bookmarker/releases)
+- [Framework: flutter](https://flutter.dev/)
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Screenshots
+<a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/1-e.png">
+    <img src="screen/1-e.png" alt="screen1", height=30%, width=30%>
+  </a>
+  <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/2-e.png">
+    <img src="screen/2-e.png" alt="screen2", height=30%, width=30%>
+  </a>
+  <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/3-e.png">
+    <img src="screen/3-e.png" alt="screen3", height=30%, width=30%>
+  </a>
+  <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/4-e.png">
+    <img src="screen/4-e.png" alt="screen4", height=30%, width=30%>
+  </a>

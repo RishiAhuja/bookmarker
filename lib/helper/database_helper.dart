@@ -4,12 +4,14 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../widgets/data.dart';
+
 class DatabaseHelper {
 
-  static final _databaseName = "MyDedTable697.db";
+  final _databaseName = "MyDedTable697.db";
   static final _databaseVersion = 1;
 
-  static final table = 'my_table';
+  // static final table = 'my_table';
 
   static final columnId = '_id';
   static final columnName = 'name';
@@ -17,6 +19,7 @@ class DatabaseHelper {
   static final columnThumbnail = 'thumb';
   static final columnTotal = 'total';
   static final columnDone = 'done';
+  static final columnLove = 'love';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -43,7 +46,7 @@ class DatabaseHelper {
   // SQL code to create the database table
   Future _onCreate(Database db, int version) async {
     await db.execute('''
-          CREATE TABLE $table (
+          CREATE TABLE current_books (
             $columnId INTEGER PRIMARY KEY,
             $columnName TEXT NOT NULL,
             $columnAuthor TEXT NOT NULL,
@@ -51,7 +54,23 @@ class DatabaseHelper {
             $columnDone TEXT NOT NULL,
             $columnThumbnail TEXT NOT NULL
           )
-          ''');
+          ''').then((value) async{
+            print('books_created');
+
+            await db.execute('''
+          CREATE TABLE wishlist (
+            $columnId INTEGER PRIMARY KEY,
+            $columnName TEXT NOT NULL,
+            $columnAuthor TEXT NOT NULL,
+            $columnTotal TEXT NOT NULL,
+            $columnLove TEXT NOT NULL,
+            $columnThumbnail TEXT NOT NULL
+          )
+          ''').then((value) async{
+              print('wishlist_created');
+            });
+    });
+    
   }
 
   // Helper methods

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 Color textColor = const Color.fromRGBO(20, 20, 20, 1);
 Color lightBlack = const Color.fromRGBO(50, 50, 50, 1);
+String table = 'current_books';
 
 List<BoxShadow> lightShadows = [
   BoxShadow(
