@@ -1,18 +1,20 @@
 import 'package:bks/helper/database_helper.dart';
 import 'package:bks/main.dart';
 import 'package:bks/widgets/data.dart';
+import 'package:bks/widgets/search_content.dart';
+import 'package:drop_shadow_image/drop_shadow_image.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
-import 'package:lottie/lottie.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:sizer/sizer.dart';
-import 'package:http/http.dart' as http;
 
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:toggle_switch/toggle_switch.dart';
+import '../widgets/book_options.dart';
+import '../widgets/bookmark.dart';
+import '../widgets/completed_books.dart';
 
 class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
@@ -21,438 +23,89 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-Timer _debounce;
-TextEditingController search = TextEditingController();
-StreamController _streamController;
-Stream _stream;
-double _dragPercentage = 0;
-double _dragUpdate = 0;
+
+
 
 List books = [];
 bool loading = true;
-
-int toggleIndex = 0;
-_searchBooks() async{
-  if (search.text == null || search.text.isEmpty) {
-    _streamController.add(null);
-    return;
-  }
-  String searchTerm;
-  searchTerm = (search.text.trim()).replaceAll(' ', '+');
-  print(search.text);
-  print(searchTerm);
-  _streamController.add("waiting");
-
-  final response = await http.get(Uri.parse('https://www.googleapis.com/books/v1/volumes?q=$searchTerm'));
-  _streamController.add(json.decode(response.body));
-  print(json.decode(response.body));
+List readBooks = [];
 
 
-}
+List<AnimationController> animatedControllers = [];
+
 TextEditingController pages = TextEditingController();
-class bookmark extends StatefulWidget {
-  final int totalPages;
-  final int completedPages;
-  final int id;
-  bookmark({@required this.completedPages, @required this.totalPages, @required this.id});
-  @override
-  State<bookmark> createState() => _bookmarkState();
-}
 
-class _bookmarkState extends State<bookmark> {
-  @override
-  Widget build(BuildContext context) {
-    return
-      Container(
-          child: Column(
-            children: [
-              const SizedBox(height: 15),
-              Container(
-                width: MediaQuery.of(context).size.width/2.5,
-                height: 15,
-                decoration: BoxDecoration(
-                    color: lightBlack,
-                    borderRadius: BorderRadius.circular(30)
-                ),
-              ),
-              const SizedBox(height: 15),
-              ToggleSwitch(
-                minWidth: 60.0,
-                minHeight: 45.0,
-                fontSize: 16.0,
-                cornerRadius: 18.0,
-                initialLabelIndex: toggleIndex,
-                activeBgColor: [lightBlack],
-                activeFgColor: Colors.white,
-                inactiveBgColor: Colors.grey[350],
-                inactiveFgColor: Colors.grey[900],
-                totalSwitches: 2,
-                iconSize: 24.sp,
-                radiusStyle: true,
-                icons: const [
-                  Icons.bookmark,
-                  Icons.book
-                ],
-                dividerColor: Colors.grey[300],
-                onToggle: (index) {
-                  print('switched to: $index');
-                  setState(() {
-                    toggleIndex = index;
-                    if(index == 0){
-                      _dragUpdate = widget.completedPages.toDouble() / widget.totalPages.toDouble() * 100;
-                      pages.text = widget.completedPages.toString();
-                    }
-                    else{
-                      _dragUpdate = 100;
-                      pages.text = widget.totalPages.toString();
-
-                    }
-                  });
-                },
-              ),
-              const SizedBox(height: 15),
-              Text(
-                toggleIndex == 0 ? 'Bookmark the page where you left' : 'Total number of pages in the book',
-                style: TextStyle(
-                  color: lightBlack,
-                  fontFamily: 'Hurme'
-                ),
-              ),
-              // const SizedBox(height: 10,),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: SizedBox(
-                  width: double.maxFinite,
-                  child: CupertinoSlider(
-                    value: _dragUpdate,
-                    max: 100,
-                    min: 0,
-                    onChanged: (double dragUpdate) {
-                      setState(() {
-                        _dragUpdate = dragUpdate;
-                        _dragPercentage = dragUpdate * widget.totalPages;
-                        pages.text = (_dragPercentage / 100.0).toStringAsFixed(0); // dragUpdate is a fractional value between 0 and 1
-                      });
-                    },
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      // width: double.minPositive,
-                      constraints: const BoxConstraints(
-                        maxWidth: 40,
-                        minWidth: 20,
-                        maxHeight: 60
-                      ),
-                      child: TextFormField(
-                        // initialValue: _dragPercentage.toStringAsFixed(0),
-                        controller: pages,
-                          keyboardType: TextInputType.number,
-                          style: TextStyle(fontSize: 16.sp, fontFamily: 'Hurme'),
-                        decoration: const InputDecoration(
-                          // border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                    Text(
-                       ' Pages',
-                      style: TextStyle(fontSize: 16.sp, fontFamily: 'Hurme'),
-                    ),
-                  ],
-                )
-              ),
-              const SizedBox(height: 10,),
-              InkWell(
-                onTap: () async{
-                  if(toggleIndex==0){
-                    Map<String, dynamic> row = {
-                      DatabaseHelper.columnId   : widget.id,
-                      DatabaseHelper.columnDone : pages.text.toString(),
-                      DatabaseHelper.columnTotal  : widget.totalPages.toString()
-                    };
-                    final rowsAffected = await DatabaseHelper.instance.update(row);
-                    print('updated $rowsAffected row(s)');
-                  }
-                  if(toggleIndex == 1){
-                    Map<String, dynamic> row = {
-                      DatabaseHelper.columnId   : widget.id,
-                      DatabaseHelper.columnDone : widget.completedPages.toString(),
-                      DatabaseHelper.columnTotal  : pages.text.toString()
-                    };
-                    final rowsAffected = await DatabaseHelper.instance.update(row);
-                    print('updated $rowsAffected row(s)');
-                  }
-                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
-                },
-                child: Container(
-                  width: MediaQuery.of(context).size.width/2,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    gradient: const LinearGradient(
-                      colors: [
-                        Colors.lightBlueAccent,
-                        Colors.lightBlue,
-                        Colors.blue
-                      ]
-                    ),
-                    boxShadow: lowOpaShadow
-                  ),
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: Text(
-                      toggleIndex == 0 ? 'Bookmark' : 'Save Total Pages',
-                      style: TextStyle(
-                        fontFamily: 'Hurme',
-                        color: Colors.white,
-                        fontSize: 15.sp
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30,),
-            ],
-          )
-      );
-  }
-}
-
-
-Widget modalContent (context) {
-  return SizedBox(
-    height: MediaQuery.of(context).size.height/1.1,
-    child: Column(
-      children: [
-        const SizedBox(height: 15),
-        Container(
-          width: MediaQuery.of(context).size.width/2.5,
-          height: 15,
-          decoration: BoxDecoration(
-            color: lightBlack,
-            borderRadius: BorderRadius.circular(30)
-          ),
-        ),
-        const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              width: MediaQuery.of(context).size.width/1.5,
-              decoration: BoxDecoration(
-                boxShadow: lowOpaShadow,
-                borderRadius: BorderRadius.circular(15),
-                color: Colors.grey[200],
-                border: Border.all(color: Colors.grey)
-              ),
-              child: TextFormField(
-                controller: search,
-                onChanged: (value){
-                  if (_debounce?.isActive ?? false) _debounce.cancel();
-                  _debounce = Timer(const Duration(milliseconds: 2000), () {
-                    _searchBooks();
-                  });
-                },
-                style: const TextStyle(fontFamily: 'Hurme'),
-                decoration: const InputDecoration(
-                  hintStyle: TextStyle(fontFamily: 'Hurme'),
-                  hintText: 'Search a book',
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            const SizedBox(width: 15,),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              decoration: BoxDecoration(
-                  boxShadow: lowOpaShadow,
-                  borderRadius: BorderRadius.circular(15),
-                  color: Colors.grey[200],
-                  border: Border.all(color: Colors.grey)
-              ),
-              child: IconButton(
-                icon: Icon(Icons.search, size: 22.sp,),
-                onPressed: (){
-                  _searchBooks();
-                },
-              )
-            ),
-          ],
-        ),
-        StreamBuilder(
-          stream: _stream,
-          builder: (BuildContext ctx, AsyncSnapshot snapshot){
-            if (snapshot.data == null) {
-              return Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Lottie.asset('assets/json/plane.json'),
-                  const SizedBox(height: 10),
-                  Text('type in search bar to find books',
-                    style: TextStyle(
-                      fontFamily: 'Hurme',
-                      fontSize: 12.sp,
-                      color: lightBlack
-                    ),
-                  ),
-                ],
-              );
-            }
-
-            if (snapshot.data == "waiting") {
-
-              return Center(
-                child: Lottie.asset('assets/json/find.json'),
-
-              );
-            }
-            return SizedBox(
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 60.h,
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                        itemCount: snapshot.data['items'].length,
-                        itemBuilder: (BuildContext context, int index){
-                          return Column(
-                            children: [
-                              InkWell(
-                                onTap: () async{
-                                  Map<String, dynamic> row = {};
-                                 if(table == 'current_books'){
-                                   row = {
-                                     DatabaseHelper.columnName: (snapshot.data['items'][index]['volumeInfo']['title']).toString(),
-                                     DatabaseHelper.columnAuthor: (snapshot.data['items'][index]['volumeInfo']['authors'][0]).toString(),
-                                     DatabaseHelper.columnThumbnail: (snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']).toString(),
-                                     DatabaseHelper.columnTotal: (snapshot.data['items'][index]['volumeInfo']['pageCount']).toString(),
-                                     DatabaseHelper.columnDone: '0'
-                                   };
-                                 }
-                                  if(table == 'wishlist'){
-                                    row = {
-                                      DatabaseHelper.columnName: (snapshot.data['items'][index]['volumeInfo']['title']).toString(),
-                                      DatabaseHelper.columnAuthor: (snapshot.data['items'][index]['volumeInfo']['authors'][0]).toString(),
-                                      DatabaseHelper.columnThumbnail: (snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']).toString(),
-                                      DatabaseHelper.columnTotal: (snapshot.data['items'][index]['volumeInfo']['pageCount']).toString(),
-                                      DatabaseHelper.columnLove: '0'
-                                    };
-                                  }
-                                  books.add(row);
-                                  final id = await DatabaseHelper.instance.insert(row);
-                                  print('inserted row id: $id');
-                                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                  child: ListTile(
-                                      leading: Image.network(snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']),
-                                      title: Text(snapshot.data['items'][index]['volumeInfo']['title'], style: const TextStyle(fontFamily: 'Hurme'),),
-                                      subtitle: Text(snapshot.data['items'][index]['volumeInfo']['authors'][0], style: const TextStyle(fontFamily: 'Hurme'),)
-
-                                ),
-                                ),
-                              ),
-                              Divider(color: Colors.grey[350],)
-                            ],
-                          );
-                        }
-                    ),
-                  ),
-                  // const SizedBox(height: 10,),
-                  Container(
-                    alignment: Alignment.center,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        const SizedBox(width: 20,),
-                        Container(
-                          padding: const EdgeInsets.all(6.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: Colors.blue
-                          ),
-                          child:
-                            Icon(Icons.add, color: Colors.white, size: 30.sp,)
-                        ),
-                        Expanded(
-                          child: ListView(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            children: const [
-                              ListTile(
-                                title: Text(
-                                  "Can't find it?",
-                                  style: TextStyle(fontFamily: 'Hurme'),
-                                ),
-                                subtitle: Text(
-                                  "Add book manually",
-                                  style: TextStyle(fontFamily: 'Hurme'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            );
-          },
-        )
-      ],
-    )
-  );
-}
-
-
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with TickerProviderStateMixin{
+  double turns = 0.0;
+  bool isClicked = false;
   @override
   void initState() {
     // TODO: implement initState
-    _streamController = StreamController();
-    _stream = _streamController.stream;
+    streamController = StreamController();
+    stream = streamController.stream;
 
     fetchInitData();
-
     super.initState();
+  }
+  @override
+  void dispose() {
+    animatedControllers.forEach((element) {
+      element.dispose();
+      print('disposing...');
+    });
+    super.dispose();
   }
   fetchInitData() async{
     //-------getting-data-------//
-    setState(() {
-      loading = true;
-    });
-    final allRows = await DatabaseHelper.instance.queryAllRows();
-    print('query all rows:');
-    setState(() {
-      books.clear();
-      allRows.forEach((row){
-        print(row);
-        Map<String, dynamic> map = Map<String, dynamic>.from(row);
-
-        books.add(map);
+    if(table == 'current_books'){
+      setState(() {
+        loading = true;
       });
-      loading = false;
-    });
+      final allRows = await DatabaseHelper.instance.queryAllRows();
+      print('query all rows:');
+      setState(() {
+        books.clear();
+        readBooks.clear();
+        allRows.forEach((row){
+          print(row);
+          Map<String, dynamic> map = Map<String, dynamic>.from(row);
+
+          if(row['maf'] == 0){
+            books.add(map);
+            animatedControllers.add(AnimationController(vsync: this, duration: const Duration(milliseconds: 1000),));
+          }else{
+            readBooks.add(map);
+          }
+        });
+        loading = false;
+      });
+    }else{
+      setState(() {
+        loading = true;
+      });
+      final allRows = await DatabaseHelper.instance.queryAllRows();
+      print('query all rows:');
+      setState(() {
+        books.clear();
+        allRows.forEach((row){
+          print(row);
+          Map<String, dynamic> map = Map<String, dynamic>.from(row);
+
+          books.add(map);
+        });
+        loading = false;
+      });
+    }
   }
   @override
   Widget build(BuildContext context) {
     return loading ? const Scaffold(body: Center(child: CircularProgressIndicator(),)) : Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: customWhiteColor,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
         child: AppBar(
           elevation: 0,
-          backgroundColor: Colors.white,
+          backgroundColor: customWhiteColor,
           title: Column(
             children: [
               const SizedBox(height: 30),
@@ -461,7 +114,7 @@ class _HomeState extends State<Home> {
                 style: TextStyle(
                   fontFamily: 'Hurme',
                   fontSize: 23.sp,
-                  color: textColor,
+                  color: customBlackColor,
                 ),
               ),
             ],
@@ -477,11 +130,11 @@ class _HomeState extends State<Home> {
                     decoration: BoxDecoration(
                         boxShadow: lightShadows,
                         borderRadius: BorderRadius.circular(50),
-                        color: Colors.white
+                        color: customWhiteColor
                     ),
                     child: IconButton(
-                      tooltip: 'Wishlist',
-                      icon: Icon(table == 'wishlist' ? Icons.book_rounded : Icons.list_alt_outlined, color: Colors.black, size: 20.sp,), onPressed: () {
+                      tooltip: table == 'wishlist' ? 'bookshelf' :'wishlist',
+                      icon: Icon(table == 'wishlist' ? Icons.book_rounded : Icons.list_alt_outlined, color: customBlackColor, size: 20.sp,), onPressed: () {
                       if(table == 'current_books'){
                         print('switched_to_wishlist');
                         setState(() {
@@ -511,16 +164,19 @@ class _HomeState extends State<Home> {
                     decoration: BoxDecoration(
                       boxShadow: lightShadows,
                       borderRadius: BorderRadius.circular(50),
-                      color: Colors.white
+                      color: customWhiteColor
                     ),
                     child: IconButton(
-                    icon: Icon(Icons.add, color: Colors.black, size: 20.sp), onPressed: () {
-                      _streamController = StreamController();
-                      _stream = _streamController.stream;
+                    icon: Icon(Icons.add, color: customBlackColor, size: 20.sp), onPressed: () {
+                      streamController = StreamController();
+                      stream = streamController.stream;
+                      setState(() {
+                        search.text = '';
+                      });
                       showMaterialModalBottomSheet(
                         context: context,
                         bounce: true,
-                        duration: const Duration(milliseconds: 1200),
+                        duration: const Duration(milliseconds: 600),
                         builder: (context) => SingleChildScrollView(
                           controller: ModalScrollController.of(context),
                           child: Container(child: modalContent(context)),
@@ -551,13 +207,13 @@ class _HomeState extends State<Home> {
                         setState(() {
                           toggleIndex = 0;
                           pages.text = books[index]['done'];
-                          _dragPercentage = double.parse(books[index]['done']);
-                          _dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
+                          dragPercentage = double.parse(books[index]['done']);
+                          dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
                         });
                         showMaterialModalBottomSheet(
                           context: context,
                           bounce: true,
-                          duration: const Duration(milliseconds: 1200),
+                          duration: const Duration(milliseconds: 600),
                           builder: (context) => SingleChildScrollView(
                             controller: ModalScrollController.of(context),
                             child: Container(child: bookmark(id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)),
@@ -569,11 +225,16 @@ class _HomeState extends State<Home> {
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Row(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
+                          DropShadowImage(
+
+                            offset: Offset(5, 5),
+                            scale: 1,
+                            blurRadius: 3,
+                            borderRadius: 20,
+                            image: Image.network(
                               books[index]['thumb'],
                               scale: 1.4,
+
                             ),
                           ),
                           Expanded(
@@ -586,7 +247,8 @@ class _HomeState extends State<Home> {
                                     books[index]['name'],
                                     style: TextStyle(
                                       fontFamily: 'Hurme',
-                                      fontSize: 13.sp
+                                      fontSize: 13.sp,
+                                      color: customBlackColor
                                     ),
                                   ),
                                 ),
@@ -659,7 +321,22 @@ class _HomeState extends State<Home> {
                                               backgroundColor: Colors.grey[350],
                                             )
                                         ),
-                                      )
+                                      ),
+                                      const SizedBox(width: 10),
+                                      GestureDetector(
+                                        onTap: (){
+                                          showMaterialModalBottomSheet(
+                                            context: context,
+                                            bounce: true,
+                                            duration: const Duration(milliseconds: 600),
+                                            builder: (context) => SingleChildScrollView(
+                                              controller: ModalScrollController.of(context),
+                                              child: Container(child: BookOptions(id: books[index]['_id'],)),
+                                            ),
+                                          );
+                                        },
+                                          child: Icon(Icons.more_vert))
+
                                     ],
                                   ),
                                 )
@@ -677,6 +354,120 @@ class _HomeState extends State<Home> {
           ),
         ),
       ),
+
+
+      // bottomNavigationBar: Container(
+      //   decoration: const BoxDecoration(
+      //     border: Border.symmetric(vertical: BorderSide(width: 1.0, color: Colors.grey))
+      //   ),
+      //   child: Material(
+      //     // color: Colors.blue,
+      //     // color: customWhiteColor,
+      //     color: Color.fromARGB(255, 243, 243, 243),
+      //     child: Padding(
+      //       padding: const EdgeInsets.all(8.0),
+      //       child: InkWell(
+      //         onTap: () {
+      //           showMaterialModalBottomSheet(
+      //             context: context,
+      //             bounce: true,
+      //             duration: const Duration(milliseconds: 600),
+      //             builder: (context) => SingleChildScrollView(
+      //               controller: ModalScrollController.of(context),
+      //               child: Container(child: completedBooks(context)),
+      //             ),
+      //           );
+      //         },
+      //         child: SizedBox(
+      //           height: kToolbarHeight,
+      //           width: double.infinity,
+      //           child: Center(
+      //             child: Row(
+      //               mainAxisAlignment: MainAxisAlignment.center,
+      //               children: [
+      //                 Container(
+      //                   decoration: BoxDecoration(
+      //                     borderRadius: BorderRadius.circular(25.0),
+      //                     color: Color.fromARGB(255, 243, 243, 243),
+      //                     boxShadow: const [
+      //                       BoxShadow(
+      //                         blurRadius: 30.0,
+      //                         offset: Offset(20, 20),
+      //                         color: Colors.grey,
+      //                       ),
+      //                       BoxShadow(
+      //                         blurRadius: 30.0,
+      //                         offset: Offset(-20, -20),
+      //                         color: customWhiteColor,
+      //                       )
+      //                     ],
+      //                   ),
+      //                   child: SizedBox(
+      //                     height: kToolbarHeight,
+      //                     width: kToolbarHeight,
+      //                     child: Center(
+      //                       child: IconButton(
+      //
+      //                         icon: Icon(Icons.done, size: 20.sp, color: Colors.black,),
+      //                       ),
+      //                     ),
+      //                   ),
+      //                 ),
+      //               ],
+      //             ),
+      //           ),
+      //         ),
+      //       ),
+      //     ),
+      //   ),
+      // ),
+      // floatingActionButtonLocation:
+      // FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton(
+        // label: Text('Download'), // <-- Text
+        // backgroundColor: Colors.black,
+        // icon: Icon( // <-- Icon
+        //   Icons.download,
+        //   size: 24.0,
+        // ),
+        child: Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 245, 245, 245),
+            borderRadius: const BorderRadius.all(
+              Radius.circular(100),
+            ),
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 10.0,
+                offset: const Offset(10, 10),
+                color: Colors.grey[350],
+              ),
+              const BoxShadow(
+                blurRadius: 20.0,
+                offset: Offset(-10, -10),
+                color: Colors.white,
+              )
+            ],
+          ),
+          child: Icon(Icons.done, color: Colors.grey[700], size: 20.sp,),
+        ),
+        onPressed: () {
+          showMaterialModalBottomSheet(
+                          context: context,
+                          bounce: true,
+                          duration: const Duration(milliseconds: 600),
+                          builder: (context) => SingleChildScrollView(
+                            controller: ModalScrollController.of(context),
+                            child: Container(child: completedBooks(context)),
+                          ),
+                        );
+        },
+      ),
+
     );
   }
 }
+
+
