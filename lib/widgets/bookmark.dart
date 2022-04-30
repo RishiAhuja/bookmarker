@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:sizer/sizer.dart';
@@ -11,6 +10,10 @@ import 'data.dart';
 int toggleIndex = 0;
 double dragPercentage = 0;
 double dragUpdate = 0;
+
+bool focusNode = false;
+//variables common to both main widget and this widget
+
 
 class bookmark extends StatefulWidget {
   final int totalPages;
@@ -26,6 +29,7 @@ class _bookmarkState extends State<bookmark> {
   Widget build(BuildContext context) {
     return
       Container(
+          color: customWhiteColor,
           child: Column(
             children: [
               const SizedBox(height: 15),
@@ -33,7 +37,7 @@ class _bookmarkState extends State<bookmark> {
                 width: MediaQuery.of(context).size.width/2.5,
                 height: 15,
                 decoration: BoxDecoration(
-                    color: lightBlack,
+                    color: customBlackColor,
                     borderRadius: BorderRadius.circular(30)
                 ),
               ),
@@ -45,7 +49,7 @@ class _bookmarkState extends State<bookmark> {
                 fontSize: 16.0,
                 cornerRadius: 18.0,
                 initialLabelIndex: toggleIndex,
-                activeBgColor: [lightBlack],
+                activeBgColor: [customBlackColor],
                 activeFgColor: Colors.white,
                 inactiveBgColor: Colors.grey[350],
                 inactiveFgColor: Colors.grey[900],
@@ -77,7 +81,7 @@ class _bookmarkState extends State<bookmark> {
               Text(
                 toggleIndex == 0 ? 'Bookmark the page where you left' : 'Total number of pages in the book',
                 style: TextStyle(
-                    color: lightBlack,
+                    color: customBlackColor,
                     fontFamily: 'Hurme'
                 ),
               ),
@@ -86,18 +90,33 @@ class _bookmarkState extends State<bookmark> {
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: SizedBox(
                   width: double.maxFinite,
-                  child: CupertinoSlider(
-                    value: dragUpdate,
-                    max: 100,
-                    min: 0,
-                    onChanged: (double dragUpdate) {
-                      setState(() {
-                        dragUpdate = dragUpdate;
-                        dragPercentage = dragUpdate * widget.totalPages;
-                        pages.text = (dragPercentage / 100.0).toStringAsFixed(0); // dragUpdate is a fractional value between 0 and 1
-                      });
-                    },
-                  ),
+
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: Row(
+                      children: [
+                        Text(
+                          '${(dragUpdate).toStringAsFixed(0)}%',
+                          style: TextStyle(
+                              fontFamily: 'hurme',
+                              color: Colors.grey[700]
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: LinearProgressIndicator(
+                                value: dragUpdate/100,
+                                backgroundColor: Colors.grey[350],
+                              )
+                          ),
+                        ),
+                        const SizedBox(width: 10)
+
+                      ],
+                    ),
+                  )
                 ),
               ),
               Padding(
@@ -112,19 +131,35 @@ class _bookmarkState extends State<bookmark> {
                             minWidth: 20,
                             maxHeight: 60
                         ),
-                        child: TextFormField(
-                          // initialValue: _dragPercentage.toStringAsFixed(0),
-                          controller: pages,
-                          keyboardType: TextInputType.number,
-                          style: TextStyle(fontSize: 16.sp, fontFamily: 'Hurme'),
-                          decoration: const InputDecoration(
-                            // border: InputBorder.none,
+                        child: FocusScope(
+                          child: Focus(
+                            onFocusChange: (focus){
+                              print(focus);
+                              setState(() {
+                                focusNode = focus;
+                              });
+                            },
+                            child: TextFormField(
+                              controller: pages,
+                              onChanged: (_){
+                                setState(() {
+                                  if(int.parse(pages.text) <= widget.totalPages){
+                                    dragUpdate = double.parse(pages.text) / double.parse(('${widget.totalPages}')) * 100;
+                                  }
+                                });
+                              },
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(fontSize: 16.sp, fontFamily: 'Hurme', color: customBlackColor),
+                              decoration: const InputDecoration(
+                                // border: InputBorder.none,
+                              ),
+                            ),
                           ),
                         ),
                       ),
                       Text(
                         ' Pages',
-                        style: TextStyle(fontSize: 16.sp, fontFamily: 'Hurme'),
+                        style: TextStyle(fontSize: 16.sp, fontFamily: 'Hurme', color: customBlackColor),
                       ),
                     ],
                   )
@@ -157,6 +192,7 @@ class _bookmarkState extends State<bookmark> {
                   height: 60,
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
+                      // color: customWhiteColor,
                       gradient: const LinearGradient(
                           colors: [
                             Colors.lightBlueAccent,
@@ -164,7 +200,7 @@ class _bookmarkState extends State<bookmark> {
                             Colors.blue
                           ]
                       ),
-                      boxShadow: lowOpaShadow
+                      boxShadow: lightShadows
                   ),
                   child: Align(
                     alignment: Alignment.center,
@@ -172,6 +208,7 @@ class _bookmarkState extends State<bookmark> {
                       toggleIndex == 0 ? 'Bookmark' : 'Save Total Pages',
                       style: TextStyle(
                           fontFamily: 'Hurme',
+                          // color: customBlackColor,
                           color: Colors.white,
                           fontSize: 15.sp
                       ),
@@ -180,6 +217,7 @@ class _bookmarkState extends State<bookmark> {
                 ),
               ),
               const SizedBox(height: 30,),
+              focusNode ? SizedBox(height: MediaQuery.of(context).size.height/2.5,) : Container()
             ],
           )
       );

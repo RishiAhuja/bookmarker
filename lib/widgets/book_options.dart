@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bks/widgets/data.dart';
 import 'package:flutter/material.dart';
 import 'package:sizer/sizer.dart';
@@ -31,9 +33,15 @@ class _BookOptionsState extends State<BookOptions> {
                 const Divider(),
                 ListTile(
                   onTap: () async{
+                    DateTime now = DateTime.now();
                     Map<String, dynamic> row = {
                       DatabaseHelper.columnId: widget.id,
                       DatabaseHelper.columnMAF: 1,
+                      DatabaseHelper.columnDayEnded: jsonEncode({
+                        'year': now.year,
+                        'month': now.month,
+                        'day': now.day
+                      })
                     };
                     final rowsAffected = await DatabaseHelper.instance.update(row);
                     print('updated $rowsAffected row(s)');

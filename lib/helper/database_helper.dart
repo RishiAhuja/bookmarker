@@ -8,7 +8,7 @@ import '../widgets/data.dart';
 
 class DatabaseHelper {
 
-  final _databaseName = "MyDedBase699696.db";
+  final _databaseName = "MyDedBase6996cc968777779.db";
   static final _databaseVersion = 1;
 
   // static final table = 'my_table';
@@ -21,6 +21,8 @@ class DatabaseHelper {
   static final columnDone = 'done';
   static final columnLove = 'love';
   static final columnMAF = 'maf';
+  static final columnDayStarted = 'start';
+  static final columnDayEnded = 'end';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -54,7 +56,9 @@ class DatabaseHelper {
             $columnTotal TEXT NOT NULL,
             $columnDone TEXT NOT NULL,
             $columnThumbnail TEXT NOT NULL,
-            $columnMAF INTEGER NOT NULL
+            $columnMAF INTEGER NOT NULL,
+            $columnDayStarted TEXT NOT NULL,
+            $columnDayEnded TEXT
           )
           ''').then((value) async{
             print('books_created');

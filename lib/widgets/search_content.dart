@@ -16,6 +16,8 @@ TextEditingController search = TextEditingController();
 StreamController streamController;
 Stream stream;
 
+DateTime now = DateTime.now();
+
 _searchBooks() async{
   if (search.text == null || search.text.isEmpty) {
     streamController.add(null);
@@ -118,7 +120,10 @@ Widget modalContent (context) {
               if (snapshot.data == "waiting") {
 
                 return Center(
-                  child: Lottie.asset('assets/json/find.json'),
+                  child: Padding(
+                    padding: const EdgeInsets.all(10.0),
+                    child: Lottie.asset('assets/json/find.json', width: MediaQuery.of(context).size.width),
+                  ),
 
                 );
               }
@@ -144,7 +149,13 @@ Widget modalContent (context) {
                                         DatabaseHelper.columnThumbnail: (snapshot.data['items'][index]['volumeInfo']['imageLinks']['thumbnail']).toString(),
                                         DatabaseHelper.columnTotal: (snapshot.data['items'][index]['volumeInfo']['pageCount']).toString(),
                                         DatabaseHelper.columnDone: '0',
-                                        DatabaseHelper.columnMAF: 0
+                                        DatabaseHelper.columnMAF: 0,
+                                        DatabaseHelper.columnDayStarted: jsonEncode({
+                                          'year': now.year,
+                                          'month': now.month,
+                                          'day': now.day
+                                        }),
+                                        DatabaseHelper.columnDayEnded: null
                                       };
                                     }
                                     if(table == 'wishlist'){

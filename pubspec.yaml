@@ -46,7 +46,7 @@ dependencies:
   toggle_switch: ^2.0.1
   flutter_rating_stars: ^1.0.3+4
   flutter_launcher_icons: ^0.9.2
-  drop_shadow_image:
+  simple_shadow: ^0.3.0
 
 dev_dependencies:
   flutter_test:

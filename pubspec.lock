@@ -99,13 +99,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
-  drop_shadow_image:
-    dependency: "direct main"
-    description:
-      name: drop_shadow_image
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.9.1"
   fake_async:
     dependency: transitive
     description:
@@ -347,6 +340,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.27.3"
+  simple_shadow:
+    dependency: "direct main"
+    description:
+      name: simple_shadow
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0"
   sizer:
     dependency: "direct main"
     description:

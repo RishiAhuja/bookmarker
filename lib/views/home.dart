@@ -2,12 +2,12 @@ import 'package:bks/helper/database_helper.dart';
 import 'package:bks/main.dart';
 import 'package:bks/widgets/data.dart';
 import 'package:bks/widgets/search_content.dart';
-import 'package:drop_shadow_image/drop_shadow_image.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
+import 'package:simple_shadow/simple_shadow.dart';
 import 'package:sizer/sizer.dart';
 
 import 'dart:async';
@@ -16,15 +16,16 @@ import '../widgets/book_options.dart';
 import '../widgets/bookmark.dart';
 import '../widgets/completed_books.dart';
 
+int toggleIndex = 0;
+double dragPercentage = 0;
+double dragUpdate = 0;
+
 class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
 
   @override
   State<Home> createState() => _HomeState();
 }
-
-
-
 
 List books = [];
 bool loading = true;
@@ -76,6 +77,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           }else{
             readBooks.add(map);
           }
+          print('books: $books');
+          print('readBooks: $readBooks');
         });
         loading = false;
       });
@@ -216,8 +219,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                           duration: const Duration(milliseconds: 600),
                           builder: (context) => SingleChildScrollView(
                             controller: ModalScrollController.of(context),
-                            child: Container(child: bookmark(id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)),
-                          ),
+                            child: bookmark(id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)
+
+                        ),
                         );
                       }
                     },
@@ -225,16 +229,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                       padding: const EdgeInsets.symmetric(vertical: 10),
                       child: Row(
                         children: [
-                          DropShadowImage(
+                          SimpleShadow(
+                            offset: const Offset(3, 3),
+                            opacity: 0.4,         // Default: 0.5
+                            color: Colors.black,   // Default: Black
+                            sigma: 7,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.network(
+                                books[index]['thumb'],
+                                scale: 1.4,
 
-                            offset: Offset(5, 5),
-                            scale: 1,
-                            blurRadius: 3,
-                            borderRadius: 20,
-                            image: Image.network(
-                              books[index]['thumb'],
-                              scale: 1.4,
-
+                              ),
                             ),
                           ),
                           Expanded(
@@ -354,82 +360,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           ),
         ),
       ),
-
-
-      // bottomNavigationBar: Container(
-      //   decoration: const BoxDecoration(
-      //     border: Border.symmetric(vertical: BorderSide(width: 1.0, color: Colors.grey))
-      //   ),
-      //   child: Material(
-      //     // color: Colors.blue,
-      //     // color: customWhiteColor,
-      //     color: Color.fromARGB(255, 243, 243, 243),
-      //     child: Padding(
-      //       padding: const EdgeInsets.all(8.0),
-      //       child: InkWell(
-      //         onTap: () {
-      //           showMaterialModalBottomSheet(
-      //             context: context,
-      //             bounce: true,
-      //             duration: const Duration(milliseconds: 600),
-      //             builder: (context) => SingleChildScrollView(
-      //               controller: ModalScrollController.of(context),
-      //               child: Container(child: completedBooks(context)),
-      //             ),
-      //           );
-      //         },
-      //         child: SizedBox(
-      //           height: kToolbarHeight,
-      //           width: double.infinity,
-      //           child: Center(
-      //             child: Row(
-      //               mainAxisAlignment: MainAxisAlignment.center,
-      //               children: [
-      //                 Container(
-      //                   decoration: BoxDecoration(
-      //                     borderRadius: BorderRadius.circular(25.0),
-      //                     color: Color.fromARGB(255, 243, 243, 243),
-      //                     boxShadow: const [
-      //                       BoxShadow(
-      //                         blurRadius: 30.0,
-      //                         offset: Offset(20, 20),
-      //                         color: Colors.grey,
-      //                       ),
-      //                       BoxShadow(
-      //                         blurRadius: 30.0,
-      //                         offset: Offset(-20, -20),
-      //                         color: customWhiteColor,
-      //                       )
-      //                     ],
-      //                   ),
-      //                   child: SizedBox(
-      //                     height: kToolbarHeight,
-      //                     width: kToolbarHeight,
-      //                     child: Center(
-      //                       child: IconButton(
-      //
-      //                         icon: Icon(Icons.done, size: 20.sp, color: Colors.black,),
-      //                       ),
-      //                     ),
-      //                   ),
-      //                 ),
-      //               ],
-      //             ),
-      //           ),
-      //         ),
-      //       ),
-      //     ),
-      //   ),
-      // ),
-      // floatingActionButtonLocation:
-      // FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton(
-        // label: Text('Download'), // <-- Text
-        // backgroundColor: Colors.black,
-        // icon: Icon( // <-- Icon
-        //   Icons.download,
-        //   size: 24.0,
-        // ),
         child: Container(
           width: double.infinity,
           height: double.infinity,
