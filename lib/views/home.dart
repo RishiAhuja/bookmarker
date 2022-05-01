@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:bks/helper/database_helper.dart';
 import 'package:bks/main.dart';
 import 'package:bks/widgets/data.dart';
@@ -199,8 +201,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Lottie.asset('assets/json/notfound.json',),
-            Text(
+            Lottie.asset('assets/json/empty.json',),
+            const Text(
               'Add books by clicking the + button at top right',
               style: TextStyle(
                 color: Colors.grey,
@@ -235,7 +237,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                           duration: const Duration(milliseconds: 600),
                           builder: (context) => SingleChildScrollView(
                             controller: ModalScrollController.of(context),
-                            child: bookmark(id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)
+                            child: bookmark(index: index, id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)
 
                         ),
                         );
@@ -329,50 +331,81 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       IconButton(
                                           onPressed: () async{
                                             await DatabaseHelper.instance.delete(readBooks[index]['_id']);
-                                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
+                                            setState(() {
+                                              books.removeAt(index);
+                                            });
                                           },
                                           icon: Icon(Icons.delete, color: Colors.grey[600],)
                                       ),
                                     ],
                                   ),
-                                ) : Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        '${(int.parse(books[index]['done'])/int.parse(books[index]['total']) * 100).toStringAsFixed(0)}%',
-                                        style: TextStyle(
-                                          fontFamily: 'hurme',
-                                          color: Colors.grey[700]
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Expanded(
-                                        child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(10),
-                                            child: LinearProgressIndicator(
-                                              value: int.parse(books[index]['done'])/int.parse(books[index]['total']),
-                                              backgroundColor: Colors.grey[350],
-                                            )
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      GestureDetector(
-                                        onTap: (){
-                                          showMaterialModalBottomSheet(
-                                            context: context,
-                                            bounce: true,
-                                            duration: const Duration(milliseconds: 600),
-                                            builder: (context) => SingleChildScrollView(
-                                              controller: ModalScrollController.of(context),
-                                              child: Container(child: BookOptions(id: books[index]['_id'],)),
+                                ) : Column(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            '${(int.parse(books[index]['done'])/int.parse(books[index]['total']) * 100).toStringAsFixed(0)}%',
+                                            style: TextStyle(
+                                              fontFamily: 'hurme',
+                                              color: Colors.grey[700]
                                             ),
-                                          );
-                                        },
-                                          child: Icon(Icons.more_vert))
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Expanded(
+                                            child: ClipRRect(
+                                                borderRadius: BorderRadius.circular(10),
+                                                child: LinearProgressIndicator(
+                                                  value: int.parse(books[index]['done'])/int.parse(books[index]['total']),
+                                                  backgroundColor: Colors.grey[350],
+                                                )
+                                            ),
+                                          ),
+                                          const SizedBox(width: 10),
+                                          GestureDetector(
+                                            onTap: (){
+                                              showMaterialModalBottomSheet(
+                                                context: context,
+                                                bounce: true,
+                                                duration: const Duration(milliseconds: 600),
+                                                builder: (context) => SingleChildScrollView(
+                                                  controller: ModalScrollController.of(context),
+                                                  child: Container(child: BookOptions(id: books[index]['_id'],)),
+                                                ),
+                                              );
+                                            },
+                                              child: Icon(Icons.more_vert))
 
-                                    ],
-                                  ),
+                                        ],
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                                      child: Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'Reading ${
+                                              int.parse(books[index]['done']) / int.parse(DateTime(
+                                                DateTime.now().year,
+                                                DateTime.now().month,
+                                                DateTime.now().day,
+                                              ).difference(
+                                                  DateTime(
+                                                    jsonDecode(books[index]['start'])['year'],
+                                                    jsonDecode(books[index]['start'])['month'],
+                                                    jsonDecode(books[index]['start'])['day'],
+                                                  )
+                                              ).inDays.toString())
+                                          } pages every day',
+                                          style: TextStyle(
+                                              fontFamily: 'Hurme',
+                                              color: Colors.grey[900]
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 )
                               ],
                             ),

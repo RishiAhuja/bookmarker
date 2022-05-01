@@ -151,9 +151,9 @@ Widget modalContent (context) {
                                         DatabaseHelper.columnDone: '0',
                                         DatabaseHelper.columnMAF: 0,
                                         DatabaseHelper.columnDayStarted: jsonEncode({
-                                          'year': now.year,
-                                          'month': now.month,
-                                          'day': now.day
+                                          'year': DateTime.now().year,
+                                          'month': DateTime.now().month,
+                                          'day': DateTime.now().day
                                         }),
                                         DatabaseHelper.columnDayEnded: null
                                       };

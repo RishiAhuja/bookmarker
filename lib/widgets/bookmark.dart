@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:toggle_switch/toggle_switch.dart';
 import 'package:sizer/sizer.dart';
 
@@ -19,7 +22,8 @@ class bookmark extends StatefulWidget {
   final int totalPages;
   final int completedPages;
   final int id;
-  bookmark({@required this.completedPages, @required this.totalPages, @required this.id});
+  final int index;
+  bookmark({@required this.index, @required this.completedPages, @required this.totalPages, @required this.id});
   @override
   State<bookmark> createState() => _bookmarkState();
 }
@@ -42,7 +46,53 @@ class _bookmarkState extends State<bookmark> {
                 ),
               ),
               const SizedBox(height: 15),
-
+              Padding(
+                padding: const EdgeInsets.only(right: 20),
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child: GestureDetector(
+                    onTap: () async{
+                      DatePicker.showDatePicker(context,
+                          showTitleActions: true,
+                          minTime: DateTime(2010, 1, 1),
+                          maxTime: DateTime.now(), onChanged: (date) {
+                            print('change $date');
+                          }, onConfirm: (date) async{
+                            print('confirm $date');
+                            setState((){
+                              books[widget.index]['start'] = jsonEncode({
+                                'year': date.year,
+                                'month': date.month,
+                                'day': date.day,
+                              });
+                            });
+                            Map<String, dynamic> row = {
+                              DatabaseHelper.columnId: books[widget.index]['_id'],
+                              DatabaseHelper.columnDayStarted: jsonEncode({
+                                'year': date.year,
+                                'month': date.month,
+                                'day': date.day,
+                              })
+                            };
+                            final rowsAffected = await DatabaseHelper.instance.update(row);
+                            print('updated $rowsAffected row(s)');
+                          }, currentTime: DateTime(
+                            jsonDecode(books[widget.index]['start'])['year'],
+                            jsonDecode(books[widget.index]['start'])['month'],
+                            jsonDecode(books[widget.index]['start'])['day'],
+                          ), locale: LocaleType.en);
+                    },
+                    child: Text(
+                      'Started at ${jsonDecode(books[widget.index]['start'])['day']}-${jsonDecode(books[widget.index]['start'])['month']}-${jsonDecode(books[widget.index]['start'])['year']}',
+                      style: TextStyle(
+                          fontFamily: 'Hurme',
+                          color: customBlackColor
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
               ToggleSwitch(
                 minWidth: 60.0,
                 minHeight: 45.0,
