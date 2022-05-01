@@ -6,6 +6,7 @@ import 'package:bks/widgets/search_content.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
+import 'package:lottie/lottie.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:simple_shadow/simple_shadow.dart';
 import 'package:sizer/sizer.dart';
@@ -194,7 +195,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           ],
         ),
       ),
-      body: SingleChildScrollView(
+      body: books.isEmpty ? Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Lottie.asset('assets/json/notfound.json',),
+            Text(
+              'Add books by clicking the + button at top right',
+              style: TextStyle(
+                color: Colors.grey,
+                fontFamily: 'Hurme'
+              ),
+            ),
+            const SizedBox(height: 40,)
+          ],
+        ),
+      ) : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Column(
@@ -274,38 +290,50 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                 ),
                                 table == 'wishlist' ? Container(
                                   padding: const EdgeInsets.only(left: 10),
-                                  child: RatingStars(
-                                    value: int.parse(books[index]['love']).toDouble(),
-                                    onValueChanged: (v) async{
-                                      print(v);
-                                      setState(() {
-                                        books[index]['love'] = v.toStringAsFixed(0);
-                                      });
-                                      print(books[index]['_id']);
-                                      print(v.toStringAsFixed(0));
-                                      Map<String, dynamic> row = {
-                                        DatabaseHelper.columnId: books[index]['_id'],
-                                        DatabaseHelper.columnLove: v.toStringAsFixed(0),
-                                      };
-                                      final rowsAffected = await DatabaseHelper.instance.update(row);
-                                      print('updated $rowsAffected row(s)');
-                                    },
-                                    starBuilder: (index, color) => Icon(
-                                      CupertinoIcons.heart_fill,
-                                      color: color,
-                                      size: 30,
-                                    ),
-                                    starCount: 3,
-                                    starSize: 40,
-                                    maxValue: 3,
-                                    starSpacing: 5,
-                                    valueLabelVisibility: false,
-                                    animationDuration: Duration(milliseconds: 1000),
-                                    valueLabelPadding:
-                                    const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
-                                    valueLabelMargin: const EdgeInsets.only(right: 8),
-                                    starOffColor: const Color(0xffe7e8ea),
-                                    starColor: Colors.red,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      RatingStars(
+                                        value: int.parse(books[index]['love']).toDouble(),
+                                        onValueChanged: (v) async{
+                                          print(v);
+                                          setState(() {
+                                            books[index]['love'] = v.toStringAsFixed(0);
+                                          });
+                                          print(books[index]['_id']);
+                                          print(v.toStringAsFixed(0));
+                                          Map<String, dynamic> row = {
+                                            DatabaseHelper.columnId: books[index]['_id'],
+                                            DatabaseHelper.columnLove: v.toStringAsFixed(0),
+                                          };
+                                          final rowsAffected = await DatabaseHelper.instance.update(row);
+                                          print('updated $rowsAffected row(s)');
+                                        },
+                                        starBuilder: (index, color) => Icon(
+                                          CupertinoIcons.heart_fill,
+                                          color: color,
+                                          size: 30,
+                                        ),
+                                        starCount: 3,
+                                        starSize: 40,
+                                        maxValue: 3,
+                                        starSpacing: 5,
+                                        valueLabelVisibility: false,
+                                        animationDuration: Duration(milliseconds: 1000),
+                                        valueLabelPadding:
+                                        const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
+                                        valueLabelMargin: const EdgeInsets.only(right: 8),
+                                        starOffColor: Colors.grey[350],
+                                        starColor: Colors.red,
+                                      ),
+                                      IconButton(
+                                          onPressed: () async{
+                                            await DatabaseHelper.instance.delete(readBooks[index]['_id']);
+                                            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
+                                          },
+                                          icon: Icon(Icons.delete, color: Colors.grey[600],)
+                                      ),
+                                    ],
                                   ),
                                 ) : Padding(
                                   padding: const EdgeInsets.symmetric(horizontal: 20.0),

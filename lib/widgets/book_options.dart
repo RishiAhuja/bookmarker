@@ -55,6 +55,7 @@ class _BookOptionsState extends State<BookOptions> {
                 ListTile(
                   onTap: () async{
                     await DatabaseHelper.instance.delete(widget.id);
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
                   },
                   leading: Icon(Icons.delete, size: 20.sp, color: Colors.red[400],),
                   title: Text('Mark as finished', style: TextStyle(fontFamily: 'Hurme', fontSize: 12.sp, color: Colors.red),),
