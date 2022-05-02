@@ -8,6 +8,7 @@ import 'package:bks/widgets/search_content.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_stars/flutter_rating_stars.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:simple_shadow/simple_shadow.dart';
@@ -18,10 +19,6 @@ import 'dart:async';
 import '../widgets/book_options.dart';
 import '../widgets/bookmark.dart';
 import '../widgets/completed_books.dart';
-
-int toggleIndex = 0;
-double dragPercentage = 0;
-double dragUpdate = 0;
 
 class Home extends StatefulWidget {
   const Home({Key key}) : super(key: key);
@@ -224,13 +221,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                 itemBuilder: (BuildContext context,int index){
                   return GestureDetector(
                     onTap: (){
+                      setState(() {
+                        toggleIndex = 0;
+                        pages.text = books[index]['done'];
+                        dragPercentage = double.parse(books[index]['done']);
+                        dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
+                      });
                       if(table == 'current_books'){
-                        setState(() {
-                          toggleIndex = 0;
-                          pages.text = books[index]['done'];
-                          dragPercentage = double.parse(books[index]['done']);
-                          dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
-                        });
+
                         showMaterialModalBottomSheet(
                           context: context,
                           bounce: true,
@@ -265,28 +263,76 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-                                  child: Text(
-                                    books[index]['name'],
-                                    style: TextStyle(
-                                      fontFamily: 'Hurme',
-                                      fontSize: 13.sp,
-                                      color: customBlackColor
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
+                                            child: Text(
+                                              books[index]['name'],
+                                              style: TextStyle(
+                                                  fontFamily: 'Hurme',
+                                                  fontSize: 13.sp,
+                                                  color: customBlackColor
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 20),
+                                            child: Text(
+                                              books[index]['author'],
+                                              overflow: TextOverflow.clip,
+                                              style: TextStyle(
+                                                  fontFamily: 'Hurme',
+                                                  color: Colors.grey[700]
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 20),
-                                  child: Text(
-                                    books[index]['author'],
-                                    overflow: TextOverflow.clip,
-                                    style: TextStyle(
-                                        fontFamily: 'Hurme',
-                                      color: Colors.grey[700]
+                                    Align(
+                                      alignment: Alignment.centerRight,
+                                      child: Container(
+                                        child: Text(
+                                          DateFormat('dd-MM-yyyy').format(DateTime(
+                                              DateTime.now().year,
+                                              DateTime.now().month,
+                                              DateTime.now().day +
+                                                  int.parse(
+
+                                                      ( (int.parse(books[index]['total']) -
+                                                          int.parse(books[index]['done']) )
+                                                          /
+                                                          (int.parse(books[index]['done']) / int.parse((DateTime(
+                                                            DateTime.now().year,
+                                                            DateTime.now().month,
+                                                            DateTime.now().day,
+                                                          ).difference(
+                                                              DateTime(
+                                                                jsonDecode(books[index]['start'])['year'],
+                                                                jsonDecode(books[index]['start'])['month'],
+                                                                jsonDecode(books[index]['start'])['day'],
+                                                              )
+                                                          ).inDays + 1).toString()) ) ).toStringAsFixed(0)
+                                                  ))
+                                          ),
+                                          style: TextStyle(
+                                              fontFamily: 'Hurme',
+                                              fontSize: 12,
+                                              color: customBlackColor
+                                            // color: Colors.white
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                 ),
+
                                 const SizedBox(
                                   height: 10
                                 ),
@@ -386,7 +432,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                         alignment: Alignment.centerLeft,
                                         child: Text(
                                           'Reading ${
-                                              int.parse(books[index]['done']) / int.parse(DateTime(
+                                              (int.parse(books[index]['done']) / int.parse((DateTime(
                                                 DateTime.now().year,
                                                 DateTime.now().month,
                                                 DateTime.now().day,
@@ -396,7 +442,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                                     jsonDecode(books[index]['start'])['month'],
                                                     jsonDecode(books[index]['start'])['day'],
                                                   )
-                                              ).inDays.toString())
+                                              ).inDays + 1).toString()) ).toStringAsFixed(1)
                                           } pages every day',
                                           style: TextStyle(
                                               fontFamily: 'Hurme',

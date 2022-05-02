@@ -15,8 +15,6 @@ double dragPercentage = 0;
 double dragUpdate = 0;
 
 bool focusNode = false;
-//variables common to both main widget and this widget
-
 
 class bookmark extends StatefulWidget {
   final int totalPages;
@@ -136,7 +134,7 @@ class _bookmarkState extends State<bookmark> {
                 ),
               ),
               // const SizedBox(height: 10,),
-              Padding(
+              toggleIndex != 0 ? Container() : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 child: SizedBox(
                   width: double.maxFinite,
