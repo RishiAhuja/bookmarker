@@ -37,8 +37,7 @@ List<AnimationController> animatedControllers = [];
 TextEditingController pages = TextEditingController();
 
 class _HomeState extends State<Home> with TickerProviderStateMixin{
-  double turns = 0.0;
-  bool isClicked = false;
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   @override
   void initState() {
     // TODO: implement initState
@@ -63,7 +62,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         loading = true;
       });
       final allRows = await DatabaseHelper.instance.queryAllRows();
-      print('query all rows:');
       setState(() {
         books.clear();
         readBooks.clear();
@@ -77,8 +75,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
           }else{
             readBooks.add(map);
           }
-          print('books: $books');
-          print('readBooks: $readBooks');
         });
         loading = false;
       });
@@ -87,7 +83,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         loading = true;
       });
       final allRows = await DatabaseHelper.instance.queryAllRows();
-      print('query all rows:');
       setState(() {
         books.clear();
         allRows.forEach((row){
@@ -103,6 +98,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
   @override
   Widget build(BuildContext context) {
     return loading ? const Scaffold(body: Center(child: CircularProgressIndicator(),)) : Scaffold(
+      key: _scaffoldKey,
       backgroundColor: customWhiteColor,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(100),
@@ -230,14 +226,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                       if(table == 'current_books'){
 
                         showMaterialModalBottomSheet(
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(
+                              Radius.circular(30.0),
+                            ),
+                          ),
                           context: context,
-                          bounce: true,
+                          //bounce: true,
+                          expand: false,
+                          enableDrag: true,
                           duration: const Duration(milliseconds: 600),
                           builder: (context) => SingleChildScrollView(
-                            controller: ModalScrollController.of(context),
-                            child: bookmark(index: index, id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)
+                              controller: ModalScrollController.of(context),
+                              child: bookmark(index: index, id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),)
 
                         ),
+                        //   builder: (context) => bookmark(index: index, id: books[index]['_id'], totalPages: int.parse(books[index]['total']), completedPages: int.parse(books[index]['done']),),
                         );
                       }
                     },
@@ -255,7 +259,18 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                               child: Image.network(
                                 books[index]['thumb'],
                                 scale: 1.4,
-
+                                loadingBuilder: (BuildContext context, Widget child,
+                                    ImageChunkEvent loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Center(
+                                    child: CircularProgressIndicator(
+                                      value: loadingProgress.expectedTotalBytes != null
+                                          ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes
+                                          : null,
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -274,9 +289,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
                                             child: Text(
                                               books[index]['name'],
+                                              maxLines: 3,
+                                              overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                   fontFamily: 'Hurme',
-                                                  fontSize: 13.sp,
+                                                  fontSize: 12.sp,
                                                   color: customBlackColor
                                               ),
                                             ),
@@ -288,46 +305,78 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                               overflow: TextOverflow.clip,
                                               style: TextStyle(
                                                   fontFamily: 'Hurme',
-                                                  color: Colors.grey[700]
+                                                  color: Colors.grey[700],
+                                                  fontSize: 10.sp,
+                                                fontWeight: FontWeight.w200
                                               ),
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                    Align(
+                                    table == 'wishlist' ? Container() : Align(
                                       alignment: Alignment.centerRight,
-                                      child: Container(
-                                        child: Text(
-                                          DateFormat('dd-MM-yyyy').format(DateTime(
+                                      child: Row(
+                                        children: [
+                                          Tooltip(
+                                            message: 'Tentative expected date of completion of the book, ${books[index]['name']}',
+                                            triggerMode: TooltipTriggerMode.tap,
+                                            showDuration: const Duration(seconds: 1),
+                                            decoration: BoxDecoration(
+                                              color: Colors.grey[400],
+                                            ),
+                                            waitDuration: const Duration(seconds: 0),
+                                            textStyle: TextStyle(
+                                              fontFamily: 'Hurme',
+                                              color: customBlackColor,
+                                            ),
+                                            height: 100,
+                                            child: Icon(Icons.info, color: Colors.grey[400],),
+                                          ),
+                                          const SizedBox(width: 6,),
+                                          Container(
+                                            child: (int.parse(books[index]['done']) / int.parse((DateTime(
                                               DateTime.now().year,
                                               DateTime.now().month,
-                                              DateTime.now().day +
-                                                  int.parse(
+                                              DateTime.now().day,
+                                            ).difference(
+                                                DateTime(
+                                                  jsonDecode(books[index]['start'])['year'],
+                                                  jsonDecode(books[index]['start'])['month'],
+                                                  jsonDecode(books[index]['start'])['day'],
+                                                )
+                                            ).inDays + 1).toString()) ).toStringAsFixed(1) == '0.0' ? Container() : Text(
+                                               DateFormat('dd-MM-yyyy').format(DateTime(
+                                                  DateTime.now().year,
+                                                  DateTime.now().month,
+                                                  DateTime.now().day +
+                                                      int.parse(
 
-                                                      ( (int.parse(books[index]['total']) -
-                                                          int.parse(books[index]['done']) )
-                                                          /
-                                                          (int.parse(books[index]['done']) / int.parse((DateTime(
-                                                            DateTime.now().year,
-                                                            DateTime.now().month,
-                                                            DateTime.now().day,
-                                                          ).difference(
-                                                              DateTime(
-                                                                jsonDecode(books[index]['start'])['year'],
-                                                                jsonDecode(books[index]['start'])['month'],
-                                                                jsonDecode(books[index]['start'])['day'],
-                                                              )
-                                                          ).inDays + 1).toString()) ) ).toStringAsFixed(0)
-                                                  ))
+                                                          ( (int.parse(books[index]['total']) -
+                                                              int.parse(books[index]['done']) )
+                                                              /
+                                                              (int.parse(books[index]['done']) / int.parse((DateTime(
+                                                                DateTime.now().year,
+                                                                DateTime.now().month,
+                                                                DateTime.now().day,
+                                                              ).difference(
+                                                                  DateTime(
+                                                                    jsonDecode(books[index]['start'])['year'],
+                                                                    jsonDecode(books[index]['start'])['month'],
+                                                                    jsonDecode(books[index]['start'])['day'],
+                                                                  )
+                                                              ).inDays + 1).toString()) ) ).toStringAsFixed(0)
+                                                      ))
+                                              ),
+                                              style: TextStyle(
+                                                  fontFamily: 'Hurme',
+                                                  fontSize: 12,
+                                                  color: customBlackColor
+                                                // color: Colors.white
+                                              ),
+                                            ),
                                           ),
-                                          style: TextStyle(
-                                              fontFamily: 'Hurme',
-                                              fontSize: 12,
-                                              color: customBlackColor
-                                            // color: Colors.white
-                                          ),
-                                        ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -344,18 +393,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       RatingStars(
                                         value: int.parse(books[index]['love']).toDouble(),
                                         onValueChanged: (v) async{
-                                          print(v);
                                           setState(() {
                                             books[index]['love'] = v.toStringAsFixed(0);
                                           });
-                                          print(books[index]['_id']);
-                                          print(v.toStringAsFixed(0));
                                           Map<String, dynamic> row = {
                                             DatabaseHelper.columnId: books[index]['_id'],
                                             DatabaseHelper.columnLove: v.toStringAsFixed(0),
                                           };
                                           final rowsAffected = await DatabaseHelper.instance.update(row);
-                                          print('updated $rowsAffected row(s)');
                                         },
                                         starBuilder: (index, color) => Icon(
                                           CupertinoIcons.heart_fill,
@@ -367,7 +412,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                         maxValue: 3,
                                         starSpacing: 5,
                                         valueLabelVisibility: false,
-                                        animationDuration: Duration(milliseconds: 1000),
+                                        animationDuration: const Duration(milliseconds: 1000),
                                         valueLabelPadding:
                                         const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
                                         valueLabelMargin: const EdgeInsets.only(right: 8),
@@ -376,11 +421,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       ),
                                       IconButton(
                                           onPressed: () async{
-                                            await DatabaseHelper.instance.delete(readBooks[index]['_id']);
+                                            _scaffoldKey.currentState.showSnackBar(const SnackBar(duration: Duration(milliseconds: 500),content: Text('Deleting data...', style: TextStyle(fontFamily: 'Hurme'))));
+                                            await DatabaseHelper.instance.delete(readBooks[index]['_id']).then((value) {
+                                              _scaffoldKey.currentState.showSnackBar(const SnackBar(content: Text('Deleted successfully', style: TextStyle(fontFamily: 'Hurme'))));
+                                              });
                                             setState(() {
                                               books.removeAt(index);
                                             });
-                                          },
+                                            },
                                           icon: Icon(Icons.delete, color: Colors.grey[600],)
                                       ),
                                     ],
@@ -395,7 +443,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                             '${(int.parse(books[index]['done'])/int.parse(books[index]['total']) * 100).toStringAsFixed(0)}%',
                                             style: TextStyle(
                                               fontFamily: 'hurme',
-                                              color: Colors.grey[700]
+                                              color: Colors.grey[700],
                                             ),
                                           ),
                                           const SizedBox(width: 10),
@@ -421,7 +469,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                                 ),
                                               );
                                             },
-                                              child: Icon(Icons.more_vert))
+                                              child: const Icon(Icons.more_vert))
 
                                         ],
                                       ),
@@ -431,7 +479,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       child: Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          'Reading ${
+                                          '${
                                               (int.parse(books[index]['done']) / int.parse((DateTime(
                                                 DateTime.now().year,
                                                 DateTime.now().month,
@@ -443,10 +491,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                                     jsonDecode(books[index]['start'])['day'],
                                                   )
                                               ).inDays + 1).toString()) ).toStringAsFixed(1)
-                                          } pages every day',
+                                          } pages / day',
                                           style: TextStyle(
                                               fontFamily: 'Hurme',
-                                              color: Colors.grey[900]
+                                              color: Colors.grey[800],
+                                            fontWeight: FontWeight.w300
                                           ),
                                         ),
                                       ),
@@ -493,7 +542,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
         ),
         onPressed: () {
           showMaterialModalBottomSheet(
-                          context: context,
+            shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(
+              Radius.circular(30.0),
+            ),
+          ),
+            context: context,
                           bounce: true,
                           duration: const Duration(milliseconds: 600),
                           builder: (context) => SingleChildScrollView(

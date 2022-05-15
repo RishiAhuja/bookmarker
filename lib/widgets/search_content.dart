@@ -155,7 +155,16 @@ Widget modalContent (context) {
                                           'month': DateTime.now().month,
                                           'day': DateTime.now().day
                                         }),
-                                        DatabaseHelper.columnDayEnded: null
+                                        DatabaseHelper.columnDayEnded: null,
+                                        DatabaseHelper.columnData: jsonEncode(
+                                          {
+                                            jsonEncode({'year': DateTime.now().year, 'month': DateTime.now().month, 'day': DateTime.now().day}) : {
+                                              'readToday': 0,
+                                              'remaining': 0,
+                                              'goalAchieved': false,
+                                            }
+                                          }
+                                        )
                                       };
                                     }
                                     if(table == 'wishlist'){

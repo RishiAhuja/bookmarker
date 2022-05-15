@@ -58,7 +58,7 @@ class _BookOptionsState extends State<BookOptions> {
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
                   },
                   leading: Icon(Icons.delete, size: 20.sp, color: Colors.red[400],),
-                  title: Text('Mark as finished', style: TextStyle(fontFamily: 'Hurme', fontSize: 12.sp, color: Colors.red),),
+                  title: Text('Delete', style: TextStyle(fontFamily: 'Hurme', fontSize: 12.sp, color: Colors.red),),
                   subtitle: Text('Will permanently delete book data', style: TextStyle(fontFamily: 'Hurme', color: Colors.red[200]),),
                 ),
                 const Divider(),
