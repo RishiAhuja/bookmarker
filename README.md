@@ -12,20 +12,20 @@ A few resources to get you started if you want to download the 0.1.1 version:
     <img src="screen/1-e.png" alt="screen1", height=30%, width=30%>
   </a>
   <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/3-e.png">
-    <img src="screen/2-e.png" alt="screen2", height=30%, width=30%>
+    <img src="screen/3-e.png" alt="screen2", height=30%, width=30%>
   </a>
   <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/2-e.png">
-    <img src="screen/3-e.png" alt="screen3", height=30%, width=30%>
+    <img src="screen/2-e.png" alt="screen3", height=30%, width=30%>
   </a>
   <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/4-e.png">
     <img src="screen/4-e.png" alt="screen4", height=30%, width=30%>
   </a>
   <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/5-e.png">
-    <img src="screen/4-e.png" alt="screen4", height=30%, width=30%>
+    <img src="screen/5-e.png" alt="screen4", height=30%, width=30%>
   </a>
   <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/6-e.png">
-    <img src="screen/4-e.png" alt="screen4", height=30%, width=30%>
+    <img src="screen/6-e.png" alt="screen4", height=30%, width=30%>
   </a>
   <a href="https://raw.githubusercontent.com/RishiAhuja/bookmarker/master/screen/7-e.png">
-    <img src="screen/4-e.png" alt="screen4", height=30%, width=30%>
+    <img src="screen/7-e.png" alt="screen4", height=30%, width=30%>
   </a>
