@@ -86,7 +86,12 @@ Widget completedBooks(context){
                                     sigma: 7,
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20),
-                                      child: Image.network(
+                                      child:  readBooks[index]['thumb'] == 'null' ? ColorFiltered(
+                                          colorFilter: ColorFilter.mode(
+                                            ([Colors.redAccent, Colors.blue, Colors.orangeAccent, Colors.deepPurpleAccent, Colors.white]..shuffle()).first,
+                                            BlendMode.color,
+                                          ),
+                                          child: Image.asset('assets/img/ramwall.jpg', scale: 1.4)) : Image.network(
                                         readBooks[index]['thumb'],
                                         scale: 1.4,
                                         loadingBuilder: (BuildContext context, Widget child,

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:bks/helper/database_helper.dart';
 import 'package:bks/main.dart';
@@ -71,7 +72,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
 
           if(row['maf'] == 0){
             books.add(map);
-            animatedControllers.add(AnimationController(vsync: this, duration: const Duration(milliseconds: 1000),));
+            // animatedControllers.add(AnimationController(vsync: this, duration: const Duration(milliseconds: 1000),));
           }else{
             readBooks.add(map);
           }
@@ -224,7 +225,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                         dragUpdate = double.parse(books[index]['done']) / double.parse(books[index]['total']) * 100;
                       });
                       if(table == 'current_books'){
-
+                        setState(() {
+                          todayToMap = {
+                            'year': DateTime.now().year,
+                            'month': DateTime.now().month,
+                            'day': DateTime.now().day
+                          };
+                        });
                         showMaterialModalBottomSheet(
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(
@@ -256,7 +263,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                             sigma: 7,
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(20),
-                              child: Image.network(
+                              child: books[index]['thumb'] == 'null' ? ColorFiltered(
+                                  colorFilter: ColorFilter.mode(
+                                    ([Colors.redAccent, Colors.blue, Colors.orangeAccent, Colors.deepPurpleAccent, Colors.white]..shuffle()).first,
+                                    BlendMode.color,
+                                  ),
+                                  child: Image.asset('assets/img/ramwall.jpg', scale: 1.4)) :Image.network(
                                 books[index]['thumb'],
                                 scale: 1.4,
                                 loadingBuilder: (BuildContext context, Widget child,
@@ -319,11 +331,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                       child: Row(
                                         children: [
                                           Tooltip(
-                                            message: 'Tentative expected date of completion of the book, ${books[index]['name']}',
+                                            message: 'Expected date of completion of the book, ${books[index]['name']}.',
                                             triggerMode: TooltipTriggerMode.tap,
                                             showDuration: const Duration(seconds: 1),
                                             decoration: BoxDecoration(
-                                              color: Colors.grey[400],
+                                              color: Colors.grey[350],
                                             ),
                                             waitDuration: const Duration(seconds: 0),
                                             textStyle: TextStyle(
@@ -417,7 +429,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                         const EdgeInsets.symmetric(vertical: 1, horizontal: 8),
                                         valueLabelMargin: const EdgeInsets.only(right: 8),
                                         starOffColor: Colors.grey[350],
-                                        starColor: Colors.red,
+                                        starColor: books[index]['color'] == null ? Colors.blue : Color(int.parse(books[index]['color'].split('(0x')[1].split(')')[0], radix: 16)),
                                       ),
                                       IconButton(
                                           onPressed: () async{

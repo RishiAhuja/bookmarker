@@ -24,6 +24,7 @@ class DatabaseHelper {
   static final columnDayStarted = 'start';
   static final columnDayEnded = 'end';
   static final columnData = 'data';
+  static final columnColor = 'color';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -61,7 +62,8 @@ class DatabaseHelper {
             $columnMAF INTEGER NOT NULL,
             $columnDayStarted TEXT NOT NULL,
             $columnDayEnded TEXT,
-            $columnData TEXT
+            $columnData TEXT,
+            $columnColor TEXT
           )
           ''').then((value) async{
             print('books_created');
@@ -73,7 +75,8 @@ class DatabaseHelper {
             $columnAuthor TEXT NOT NULL,
             $columnTotal TEXT NOT NULL,
             $columnLove TEXT NOT NULL,
-            $columnThumbnail TEXT NOT NULL
+            $columnThumbnail TEXT NOT NULL,
+            $columnColor TEXT
           )
           ''').then((value) async{
               print('wishlist_created');

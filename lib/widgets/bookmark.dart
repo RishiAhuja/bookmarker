@@ -20,6 +20,18 @@ double dragUpdate = 0;
 
 bool focusNode = false;
 
+Map todayToMap = {
+  'year': DateTime.now().year,
+  'month': DateTime.now().month,
+  'day': DateTime.now().day,
+};
+
+// Future<Color> getImagePalette (ImageProvider imageProvider) async {
+//   final PaletteGenerator paletteGenerator = await PaletteGenerator
+//       .fromImageProvider(imageProvider);
+//   return paletteGenerator.dominantColor.color;
+// }
+
 class bookmark extends StatefulWidget {
   final int totalPages;
   final int completedPages;
@@ -31,6 +43,11 @@ class bookmark extends StatefulWidget {
 }
 
 class _bookmarkState extends State<bookmark> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return
@@ -97,7 +114,12 @@ class _bookmarkState extends State<bookmark> {
                   sigma: 7,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
+                    child: books[widget.index]['thumb'] == 'null' ? ColorFiltered(
+                        colorFilter: ColorFilter.mode(
+                          ([Colors.redAccent, Colors.blue, Colors.orangeAccent, Colors.deepPurpleAccent, Colors.white]..shuffle()).first,
+                          BlendMode.color,
+                        ),
+                        child: Image.asset('assets/img/ramwall.jpg', scale: 1.4)) : Image.network(
                       books[widget.index]['thumb'],
                       scale: 1.4,
                       loadingBuilder: (BuildContext context, Widget child,
@@ -116,14 +138,18 @@ class _bookmarkState extends State<bookmark> {
                   ),
                 ),
                 const SizedBox(height: 15,),
-                Text(
-                  '${books[widget.index]['name']}',
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      fontFamily: 'Hurme',
-                      fontSize: 12.sp,
-                      color: customBlackColor
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    '${books[widget.index]['name']}',
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        fontFamily: 'Hurme',
+                        fontSize: 12.sp,
+                        color: customBlackColor
+                    ),
                   ),
                 ),
                 Text(
@@ -296,24 +322,49 @@ class _bookmarkState extends State<bookmark> {
                       ],
                     )
                 ),              const SizedBox(height: 10,),
-
-                Text(
-                  toggleIndex == 0 ? 'Bookmark the page where you left' : 'Total number of pages in the book',
-                  style: TextStyle(
-                      color: customBlackColor,
-                      fontFamily: 'Hurme'
+                toggleIndex == 0 ? GestureDetector(
+                  onTap: () async{
+                    DatePicker.showDatePicker(context,
+                        showTitleActions: true,
+                        minTime: DateTime(2010, 1, 1),
+                        maxTime: DateTime.now(), onChanged: (date) {
+                        }, onConfirm: (date) async{
+                          setState(() {
+                            todayToMap = {
+                              'year': date.year,
+                              'month': date.month,
+                              'day': date.day
+                            };
+                          });
+                        }, currentTime: DateTime.now(), locale: LocaleType.en);
+                  },
+                  child: Text(
+                    'Bookmarking on ${DateFormat.yMMMd().format(DateTime(todayToMap['year'], todayToMap['month'], todayToMap['day']))}',
+                      style: TextStyle(
+                          color: customBlackColor,
+                          fontFamily: 'Hurme'
+                      ),
                   ),
+                ) : Text(
+                  'Total number of pages',
+                    style: TextStyle(
+                        color: customBlackColor,
+                        fontFamily: 'Hurme'
+                    ),
                 ),
+                // Text(
+                //   toggleIndex == 0 ? 'Bookmark the page where you left' : 'Total number of pages in the book',
+                //   style: TextStyle(
+                //       color: customBlackColor,
+                //       fontFamily: 'Hurme'
+                //   ),
+                // ),
                 const SizedBox(height: 10,),
+                // Text(books[widget.index]['color']),
                 InkWell(
                   onTap: () async{
                     if(toggleIndex==0){
 
-                      Map todayToMap = {
-                        'year': DateTime.now().year,
-                        'month': DateTime.now().month,
-                        'day': DateTime.now().day,
-                      };
                       int readToday = 0;
                       int remaining = 0;
                       bool goalAchieved = false;
@@ -378,14 +429,7 @@ class _bookmarkState extends State<bookmark> {
                     height: 60,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        // color: customWhiteColor,
-                        gradient: const LinearGradient(
-                            colors: [
-                              Colors.lightBlueAccent,
-                              Colors.lightBlue,
-                              Colors.blue
-                            ]
-                        ),
+                        color: books[widget.index]['color'] == null ? Colors.blue :Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)),
                         boxShadow: lightShadows
                     ),
                     child: Align(
@@ -395,7 +439,8 @@ class _bookmarkState extends State<bookmark> {
                         style: TextStyle(
                             fontFamily: 'Hurme',
                             // color: customBlackColor,
-                            color: Colors.white,
+                            // color: Colors.white,
+                            color: Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).red * 0.299 + Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).green * 0.587 + Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).blue * 0.114 > 128 ? customBlackColor : Colors.white,
                             fontSize: 15.sp
                         ),
                       ),
@@ -442,7 +487,7 @@ class _bookmarkState extends State<bookmark> {
                           margin: const EdgeInsets.symmetric(horizontal: 10),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: Colors.black,
+                            color: customBlackColor,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -465,7 +510,7 @@ class _bookmarkState extends State<bookmark> {
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: Colors.black,
+                            color: customBlackColor,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -487,7 +532,7 @@ class _bookmarkState extends State<bookmark> {
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(8),
-                            color: Colors.black,
+                            color: customBlackColor,
                           ),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
