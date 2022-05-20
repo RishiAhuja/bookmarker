@@ -139,12 +139,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                         print('switched_to_wishlist');
                         setState(() {
                           table = 'wishlist';
+                          // DatabaseHelper.instance.alter('color');
                         });
                       }
                       else{
                         print('switched_to_books');
                         setState(() {
                           table = 'current_books';
+                          DatabaseHelper.instance.alter('color');
                         });
                       }
                       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => MyApp()));
@@ -418,6 +420,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin{
                                           CupertinoIcons.heart_fill,
                                           color: color,
                                           size: 30,
+
                                         ),
                                         starCount: 3,
                                         starSize: 40,

@@ -123,4 +123,11 @@ class DatabaseHelper {
     Database db = await instance.database;
     return await db.delete(table, where: '$columnId = ?', whereArgs: [id]);
   }
+
+  Future<int> alter(String column) async {
+    Database db = await instance.database;
+    await db.execute('''
+      ALTER TABLE $table ADD COLUMN $column;
+    ''');
+  }
 }

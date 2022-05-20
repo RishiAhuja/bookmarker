@@ -438,9 +438,7 @@ class _bookmarkState extends State<bookmark> {
                         toggleIndex == 0 ? 'Bookmark' : 'Save Total Pages',
                         style: TextStyle(
                             fontFamily: 'Hurme',
-                            // color: customBlackColor,
-                            // color: Colors.white,
-                            color: Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).red * 0.299 + Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).green * 0.587 + Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).blue * 0.114 > 128 ? customBlackColor : Colors.white,
+                            color: books[widget.index]['color'] == null ? Colors.white : Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).red * 0.299 + Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).green * 0.587 + Color(int.parse(books[widget.index]['color'].split('(0x')[1].split(')')[0], radix: 16)).blue * 0.114 > 128 ? customBlackColor : Colors.white,
                             fontSize: 15.sp
                         ),
                       ),
