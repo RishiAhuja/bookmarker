@@ -2,7 +2,7 @@
 
 This is a app in which you can track & wishlist your books, you are reading or want to read with additonal features. 
 
-A few resources to get you started if you want to download the 0.1.1 version:
+A few resources to get you started, if you want to download the 0.1.1 version:
 
 - [Download Here](https://github.com/RishiAhuja/bookmarker/releases)
 - [Framework: flutter](https://flutter.dev/)
