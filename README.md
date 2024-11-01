@@ -38,7 +38,7 @@ A few resources to get you started, if you want to download the 0.1.1 version:
 - **Customizable UI**: Customizes the page layout based on the dominant color of each book's cover.
 - **Wishlist Management**: Allows users to prioritize books they wish to read in the future.
 
-## Installation
+## Running code
 To get started with the project, follow these steps:
 
 ```bash
