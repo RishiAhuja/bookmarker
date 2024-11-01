@@ -32,7 +32,7 @@ A few resources to get you started, if you want to download the 0.1.1 version:
     <img src="screen/7-e.png" alt="screen4", height=30%, width=30%>
   </a>
 
-### What it Solves
+## What it Solves
 - **Book Data Access**: Fetches detailed book data using the Google Books API.
 - **Reading Speed Analysis**: Analyzes and displays reading speed based on the user's previous reading history.
 - **Customizable UI**: Customizes the page layout based on the dominant color of each book's cover.
@@ -54,7 +54,7 @@ To run the app, use the following command:
 flutter run
 ```
 
-#### Usage
+## Usage
 Search and Add Books
 - Use the robust search system to find books quickly.
 - Add books that are not available through the API.
@@ -77,7 +77,7 @@ Features
 - Dynamic Page Layout Customization: Customize the page layout based on the book's cover color.
 - Wishlist Panel: Manage your reading plans effectively.
 
-#### Challenges and Solutions
+## Challenges and Solutions
 UI Design and Performance
 - Ensuring the Neomorphic UI was both aesthetically pleasing and performant required careful optimization.
 
@@ -92,7 +92,7 @@ Future Enhancements
 - Social Sharing: Intend to add features for users to share their reading progress on social media.
     
 
-#### Contributing
+## Contributing
 Contributions are what makes the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
 
 1. Fork the Project
@@ -114,5 +114,5 @@ git push origin feature/AmazingFeature
 ```
 4. Open a Pull Request
 
-#### Releases
+## Releases
 To download the latest version of the application, visit the [Releases Page](https://github.com/RishiAhuja/bookmarker/releases).
